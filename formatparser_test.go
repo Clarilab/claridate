@@ -54,6 +54,7 @@ func Test_TransformToDashedDate(t *testing.T) {
 		"DD.MM.YYYY":                           {"22.04.1712", "1712-04-22", nil},
 		"MM.YYYY":                              {"08.1492", "1492-08", nil},
 		"YYYY":                                 {"2023", "2023", nil},
+		"YYYY.MM.DD":                           {"1983.07.20", "", ErrUnsupportedDateFormat},
 		"date string already in dashed format": {"2012-10-03", "2012-10-03", nil},
 		"neither dashed nor dotted":            {"20 07 1983", "", ErrUnsupportedDateFormat},
 		"some gibberish":                       {"sfv_24w4e", "", ErrUnsupportedDateFormat},
