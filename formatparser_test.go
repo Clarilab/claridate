@@ -20,6 +20,10 @@ func Test_DetermineDateFormat(t *testing.T) {
 		"date with dots is unsupported 2":                {"07.1983", "", ErrUnsupportedDateFormat},
 		"more than 2 digits for the day lead to error":   {"1492-09-324", "", ErrUnsupportedDateFormat},
 		"more than 2 digits for the month lead to error": {"1492-908-12", "", ErrUnsupportedDateFormat},
+		"some gibberish":                                 {"sfv_24w4e", "", ErrUnsupportedDateFormat},
+		"some gibberish 2":                               {"_!@§hahaha", "", ErrUnsupportedDateFormat},
+		"some gibberish 3":                               {"            ", "", ErrUnsupportedDateFormat},
+		"some gibberish 4":                               {"¯\\_(ツ)_/¯", "", ErrUnsupportedDateFormat},
 	}
 
 	for name, tc := range testCases {
@@ -51,6 +55,11 @@ func Test_TransformToDashedDate(t *testing.T) {
 		"MM.YYYY":                              {"08.1492", "1492-08", nil},
 		"YYYY":                                 {"2023", "2023", nil},
 		"date string already in dashed format": {"2012-10-03", "2012-10-03", nil},
+		"neither dashed nor dotted":            {"20 07 1983", "", ErrUnsupportedDateFormat},
+		"some gibberish":                       {"sfv_24w4e", "", ErrUnsupportedDateFormat},
+		"some gibberish 2":                     {"_!@§hahaha", "", ErrUnsupportedDateFormat},
+		"some gibberish 3":                     {"            ", "", ErrUnsupportedDateFormat},
+		"some gibberish 4":                     {"¯\\_(ツ)_/¯", "", ErrUnsupportedDateFormat},
 	}
 
 	for name, tc := range testCases {

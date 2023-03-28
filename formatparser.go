@@ -54,9 +54,7 @@ func TransformToDashedDate(date string) (string, error) {
 	split := strings.Split(date, ".")
 
 	switch len(split) {
-	case 1:
-		// YYYY
-		return date, nil
+	// case 1 (YYYY) can never happen, because that also matches the dashedDateRegex and is returned "as is" in the first if-block of the function
 	case 2:
 		// MM.YYYY
 		return split[1] + "-" + split[0], nil
