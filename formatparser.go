@@ -9,6 +9,7 @@ var dashedDateRegex = regexp.MustCompile(`^\d{4}(-\d{1,2}){0,2}$`)
 var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}\d{4}$`)
 
 // DetermineDateFormat receives a date string and returns the format the date string is in.
+// It returns an empty string and no error if the input is an empty string.
 // Examples:
 //
 //	   ParseDateFormat("1983-07-20") -> "YYYY-MM-DD"
@@ -46,6 +47,7 @@ func DetermineDateFormat(date string) (string, error) {
 // TransformToDashedDate takes a date string that is in the dotted date format,
 // for example "MM.YYYY" or "DD.MM.YYYY", and converts it to the dashed date format.
 // If the given date string already is in the dashed date format, it is returned without error.
+// It returns an empty string and no error if the input is an empty string.
 func TransformToDashedDate(date string) (string, error) {
 	if date == "" {
 		return "", nil
