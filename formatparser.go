@@ -20,6 +20,10 @@ var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}\d{4}$`)
 //  3. the date string is separated into more than 3 parts
 //  4. the date string is separated with something other than hyphens
 func DetermineDateFormat(date string) (string, error) {
+	if date == "" {
+		return "", nil
+	}
+
 	if !dashedDateRegex.MatchString(date) {
 		return "", ErrUnsupportedDateFormat
 	}
@@ -43,6 +47,10 @@ func DetermineDateFormat(date string) (string, error) {
 // for example "MM.YYYY" or "DD.MM.YYYY", and converts it to the dashed date format.
 // If the given date string already is in the dashed date format, it is returned without error.
 func TransformToDashedDate(date string) (string, error) {
+	if date == "" {
+		return "", nil
+	}
+
 	if dashedDateRegex.MatchString(date) {
 		return date, nil
 	}
