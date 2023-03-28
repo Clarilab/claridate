@@ -53,11 +53,10 @@ func TransformToDashedDate(date string) (string, error) {
 
 	split := strings.Split(date, ".")
 
-	if len(split) == 1 {
-		return date, nil
-	}
-
 	switch len(split) {
+	case 1:
+		// YYYY
+		return date, nil
 	case 2:
 		// MM.YYYY
 		return split[1] + "-" + split[0], nil
