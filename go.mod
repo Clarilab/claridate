@@ -1,4 +1,4 @@
-module github.com/Christoph-Harms/claridate
+module github.com/Clarilab/claridate
 
 go 1.20
 
