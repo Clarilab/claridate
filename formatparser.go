@@ -7,6 +7,8 @@ import (
 
 var dashedDateRegex = regexp.MustCompile(`^\d{4}(-\d{1,2}){0,2}$`)
 var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}\d{4}$`)
+var slashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}/){0,2}\d{4}$`)
+var slahedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(/\d{1,2}){0,2}$`)
 
 // DetermineDateFormat receives a date string and returns the format the date string is in.
 // It returns an empty string and no error if the input is an empty string.
@@ -57,19 +59,38 @@ func TransformToDashedDate(date string) (string, error) {
 		return date, nil
 	}
 
-	if !dottedDateRegex.MatchString(date) {
+	isDotted := dottedDateRegex.MatchString(date)
+	isSlashedYearLast := slashedDateYearLastRegex.MatchString(date)
+	isSlashedYearFirst := slahedDateYearFirstRegex.MatchString(date)
+
+	if !isDotted && !isSlashedYearLast && !isSlashedYearFirst {
 		return "", ErrUnsupportedDateFormat
 	}
 
-	split := strings.Split(date, ".")
+	separator := "/"
+	if isDotted {
+		separator = "."
+	}
+
+	split := strings.Split(date, separator)
 
 	switch len(split) {
 	// case 1 (YYYY) can never happen, because that also matches the dashedDateRegex and is returned "as is" in the first if-block of the function
 	case 2:
-		// MM.YYYY
+		// MM.YYYY or MM/YYYY or YYYY/MM
+		if isSlashedYearFirst {
+			// YYYY/MM
+			return split[0] + "-" + split[1], nil
+		}
+		// MM.YYY or MM/YYY
 		return split[1] + "-" + split[0], nil
 	case 3:
-		// DD.MM.YYYY
+		// DD.MM.YYYY or DD/MM/YYYY or YYYY/MM/DD
+		if isSlashedYearFirst {
+			// YYYY/MM/DD
+			return split[0] + "-" + split[1] + "-" + split[2], nil
+		}
+		// DD.MM.YYYY or DD/MM/YYYY
 		return split[2] + "-" + split[1] + "-" + split[0], nil
 	default:
 		return "", ErrUnsupportedDateFormat
