@@ -61,6 +61,8 @@ func Test_TransformToDashedDate(t *testing.T) {
 		"some gibberish 2":                     {"_!@§hahaha", "", ErrUnsupportedDateFormat},
 		"some gibberish 3":                     {"            ", "", ErrUnsupportedDateFormat},
 		"some gibberish 4":                     {"¯\\_(ツ)_/¯", "", ErrUnsupportedDateFormat},
+		"can handle forward slashes":           {"20/07/1983", "1983-07-20", nil},
+		"can handle forward slashes 2":         {"1983/07/20", "1983-07-20", nil},
 	}
 
 	for name, tc := range testCases {
