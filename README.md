@@ -9,7 +9,7 @@ package main
 import (
     "fmt"
 
-    "github.com/Christoph-Harms/claridate"
+    "github.com/Clarilab/claridate"
 )
 
 func main() {
