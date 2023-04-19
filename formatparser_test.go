@@ -11,19 +11,21 @@ func Test_DetermineDateFormat(t *testing.T) {
 		input, expectedOutput string
 		expectedError         error
 	}{
-		"YYYY-MM-DD":                                     {"2006-09-28", "YYYY-MM-DD", nil},
-		"YYYY-MM":                                        {"1978-12", "YYYY-MM", nil},
-		"YYYY":                                           {"1492", "YYYY", nil},
-		"less than 4 digits for the year":                {"22-01-01", "", ErrUnsupportedDateFormat},
-		"more than 4 digits for the year":                {"201954-07-20", "", ErrUnsupportedDateFormat},
-		"date with dots is unsupported":                  {"20.07.1983", "", ErrUnsupportedDateFormat},
-		"date with dots is unsupported 2":                {"07.1983", "", ErrUnsupportedDateFormat},
+		"YYYY-MM-DD":                      {"2006-09-28", "YYYY-MM-DD", nil},
+		"YYYY-MM":                         {"1978-12", "YYYY-MM", nil},
+		"YYYY":                            {"1492", "YYYY", nil},
+		"YYYY-M-DD":                       {"1492-8-22", "YYYY-M-DD", nil},
+		"YYYY-MM-D":                       {"1492-11-5", "YYYY-MM-D", nil},
+		"less than 4 digits for the year": {"22-01-01", "", ErrUnsupportedDateFormat},
+		"more than 4 digits for the year": {"201954-07-20", "", ErrUnsupportedDateFormat},
+		"date with dots is unsupported":   {"20.07.1983", "", ErrUnsupportedDateFormat},
+		"date with dots is unsupported 2": {"07.1983", "", ErrUnsupportedDateFormat},
 		"more than 2 digits for the day lead to error":   {"1492-09-324", "", ErrUnsupportedDateFormat},
 		"more than 2 digits for the month lead to error": {"1492-908-12", "", ErrUnsupportedDateFormat},
-		"some gibberish":                                 {"sfv_24w4e", "", ErrUnsupportedDateFormat},
-		"some gibberish 2":                               {"_!@§hahaha", "", ErrUnsupportedDateFormat},
-		"some gibberish 3":                               {"            ", "", ErrUnsupportedDateFormat},
-		"some gibberish 4":                               {"¯\\_(ツ)_/¯", "", ErrUnsupportedDateFormat},
+		"some gibberish":   {"sfv_24w4e", "", ErrUnsupportedDateFormat},
+		"some gibberish 2": {"_!@§hahaha", "", ErrUnsupportedDateFormat},
+		"some gibberish 3": {"            ", "", ErrUnsupportedDateFormat},
+		"some gibberish 4": {"¯\\_(ツ)_/¯", "", ErrUnsupportedDateFormat},
 	}
 
 	for name, tc := range testCases {
@@ -52,6 +54,11 @@ func Test_TransformToDashedDate(t *testing.T) {
 		expectedError         error
 	}{
 		"DD.MM.YYYY":                           {"22.04.1712", "1712-04-22", nil},
+		"D.M.YYYY":                             {"2.4.1712", "1712-4-2", nil},
+		"D.MM.YYYY":                            {"2.04.1712", "1712-04-2", nil},
+		"D/MM/YYYY":                            {"2/04/1712", "1712-04-2", nil},
+		"YYYY-M-DD":                            {"1712-4-22", "1712-4-22", nil},
+		"DD.M.YYYY":                            {"22.4.1712", "1712-4-22", nil},
 		"MM.YYYY":                              {"08.1492", "1492-08", nil},
 		"YYYY":                                 {"2023", "2023", nil},
 		"YYYY.MM.DD":                           {"1983.07.20", "", ErrUnsupportedDateFormat},
