@@ -8,7 +8,7 @@ import (
 var dashedDateRegex = regexp.MustCompile(`^\d{4}(-\d{1,2}){0,2}$`)
 var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}\d{4}$`)
 var slashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}/){0,2}\d{4}$`)
-var slahedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(/\d{1,2}){0,2}$`)
+var slashedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(/\d{1,2}){0,2}$`)
 
 // DetermineDateFormat receives a date string and returns the format the date string is in.
 // It returns an empty string and no error if the input is an empty string.
@@ -23,6 +23,9 @@ var slahedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(/\d{1,2}){0,2}$`)
 //  3. the date string is separated into more than 3 parts
 //  4. the date string is separated with something other than hyphens
 func DetermineDateFormat(date string) (string, error) {
+	// clean the date string of potential spaces
+	date = strings.TrimSpace(date)
+
 	if date == "" {
 		return "", nil
 	}
@@ -51,6 +54,9 @@ func DetermineDateFormat(date string) (string, error) {
 // If the given date string already is in the dashed date format, it is returned without error.
 // It returns an empty string and no error if the input is an empty string.
 func TransformToDashedDate(date string) (string, error) {
+	// clean the date string of potential spaces
+	date = strings.TrimSpace(date)
+
 	if date == "" {
 		return "", nil
 	}
@@ -61,7 +67,7 @@ func TransformToDashedDate(date string) (string, error) {
 
 	isDotted := dottedDateRegex.MatchString(date)
 	isSlashedYearLast := slashedDateYearLastRegex.MatchString(date)
-	isSlashedYearFirst := slahedDateYearFirstRegex.MatchString(date)
+	isSlashedYearFirst := slashedDateYearFirstRegex.MatchString(date)
 
 	if !isDotted && !isSlashedYearLast && !isSlashedYearFirst {
 		return "", ErrUnsupportedDateFormat
