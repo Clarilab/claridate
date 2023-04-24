@@ -109,10 +109,10 @@ func TransformToDashedDate(date string) (string, error) {
 	}
 }
 
-func reverse(strSLice []string) []string {
-	for i, j := 0, len(strSLice)-1; i < j; i, j = i+1, j-1 {
-		strSLice[i], strSLice[j] = strSLice[j], strSLice[i]
+func reverse(strSlice []string) []string {
+	for i, j := 0, len(strSlice)-1; i < j; i, j = i+1, j-1 {
+		strSlice[i], strSlice[j] = strSlice[j], strSlice[i]
 	}
 
-	return strSLice
+	return strSlice
 }
