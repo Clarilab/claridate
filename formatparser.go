@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-var dashedDateRegex = regexp.MustCompile(`^\d{4}(-\d{1,2}){0,2}$`)
+var dashedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(-\d{1,2}){0,2}$`)
+var dashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}-){0,2}\d{4}$`)
 var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}\d{4}$`)
 var slashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}/){0,2}\d{4}$`)
 var slashedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(/\d{1,2}){0,2}$`)
@@ -30,7 +31,7 @@ func DetermineDateFormat(date string) (string, error) {
 		return "", nil
 	}
 
-	if !dashedDateRegex.MatchString(date) {
+	if !dashedDateYearFirstRegex.MatchString(date) {
 		return "", ErrUnsupportedDateFormat
 	}
 
@@ -61,8 +62,13 @@ func TransformToDashedDate(date string) (string, error) {
 		return "", nil
 	}
 
-	if dashedDateRegex.MatchString(date) {
+	if dashedDateYearFirstRegex.MatchString(date) {
 		return date, nil
+	}
+
+	if dashedDateYearLastRegex.MatchString(date) {
+		// DD-MM-YYYY: in this case, split the date, reverse the slice and put it back together.
+		return strings.Join(reverse(strings.Split(date, "-")), "-"), nil
 	}
 
 	isDotted := dottedDateRegex.MatchString(date)
@@ -101,4 +107,11 @@ func TransformToDashedDate(date string) (string, error) {
 	default:
 		return "", ErrUnsupportedDateFormat
 	}
+}
+
+func reverse(strings []string) []string {
+	for i, j := 0, len(strings)-1; i < j; i, j = i+1, j-1 {
+		strings[i], strings[j] = strings[j], strings[i]
+	}
+	return strings
 }
