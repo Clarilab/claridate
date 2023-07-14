@@ -3,6 +3,7 @@ package claridate
 import (
 	"regexp"
 	"strings"
+	"time"
 )
 
 var dashedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(-\d{1,2}){0,2}$`)
@@ -10,6 +11,7 @@ var dashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}-){0,2}\d{4}$`)
 var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}\d{4}$`)
 var slashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}/){0,2}\d{4}$`)
 var slashedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(/\d{1,2}){0,2}$`)
+var shortMonthRegex = regexp.MustCompile(`\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b`)
 
 // DetermineDateFormat receives a date string and returns the format the date string is in.
 // It returns an empty string and no error if the input is an empty string.
@@ -62,6 +64,14 @@ func TransformToDashedDate(date string) (string, error) {
 		return "", nil
 	}
 
+	if strings.Contains(date, ";") {
+		date, _, _ = strings.Cut(date, ";")
+	}
+
+	if strings.Contains(date, "ca.") {
+		_, date, _ = strings.Cut(date, "ca. ")
+	}
+
 	if dashedDateYearFirstRegex.MatchString(date) {
 		return date, nil
 	}
@@ -69,6 +79,10 @@ func TransformToDashedDate(date string) (string, error) {
 	if dashedDateYearLastRegex.MatchString(date) {
 		// DD-MM-YYYY: in this case, split the date, reverse the slice and put it back together.
 		return strings.Join(reverse(strings.Split(date, "-")), "-"), nil
+	}
+
+	if shortMonthRegex.MatchString(date) {
+		return parseShortMonthDate(date)
 	}
 
 	isDotted := dottedDateRegex.MatchString(date)
@@ -104,6 +118,26 @@ func TransformToDashedDate(date string) (string, error) {
 		}
 		// DD.MM.YYYY or DD/MM/YYYY
 		return split[2] + "-" + split[1] + "-" + split[0], nil
+	default:
+		return "", ErrUnsupportedDateFormat
+	}
+}
+
+func parseShortMonthDate(date string) (string, error) {
+	wordsAmount := len(strings.Fields(date))
+	switch wordsAmount {
+	case 2: // example: Jul 1957
+		parsedDate, err := time.Parse("Jan 2006", date)
+		if err != nil {
+			return "", ErrUnsupportedDateFormat
+		}
+		return parsedDate.Format("2006-01"), nil
+	case 3: // example: 30 Jul 1957
+		parsedDate, err := time.Parse("02 Jan 2006", date)
+		if err != nil {
+			return "", ErrUnsupportedDateFormat
+		}
+		return parsedDate.Format("2006-01-02"), nil
 	default:
 		return "", ErrUnsupportedDateFormat
 	}

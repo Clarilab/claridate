@@ -72,6 +72,14 @@ func Test_TransformToDashedDate(t *testing.T) {
 		"can handle forward slashes 2":          {"1983/07/20", "1983-07-20", nil},
 		"can handle dashed date with year last": {"20-07-1983", "1983-07-20", nil},
 		"can handle dashed date with year last 2": {"20-7-1983", "1983-7-20", nil},
+		"leading/trailing space":                  {" 30.07.1957 ", "1957-07-30", nil},
+		"ca. DD.MM.YYYY":                          {"ca. 30.07.1984", "1984-07-30", nil},
+		"ca. MM.YYYY":                             {"ca. 07.1984", "1984-07", nil},
+		"ca. YYYY":                                {"ca. 1984", "1984", nil},
+		"DD Mon YYYY with ;":                      {"30 Jul 1957; 1958", "1957-07-30", nil},
+		"Mon YYYY":                                {"Jul 1867", "1867-07", nil},
+		"DD.MM.YYYY with ;":                       {"30.07.1957; 1958", "1957-07-30", nil},
+		"ca. gibberish":                           {"ca. foobar", "", ErrUnsupportedDateFormat},
 	}
 
 	for name, tc := range testCases {
@@ -92,5 +100,4 @@ func Test_TransformToDashedDate(t *testing.T) {
 			assert.Equal(t, tc.expectedOutput, parsedFormat)
 		})
 	}
-
 }
