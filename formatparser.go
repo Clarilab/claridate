@@ -134,6 +134,15 @@ func parseShortMonthDate(date string) (string, error) {
 		}
 		return parsedDate.Format("2006-01"), nil
 	case 3: // example: 30 Jul 1957
+		dayLength := len(strings.Fields(date)[0])
+		if dayLength == 1 {
+			parsedDate, err := time.Parse("2 Jan 2006", date)
+			if err != nil {
+				return "", ErrUnsupportedDateFormat
+			}
+			return parsedDate.Format("2006-01-2"), nil
+		}
+
 		parsedDate, err := time.Parse("02 Jan 2006", date)
 		if err != nil {
 			return "", ErrUnsupportedDateFormat
