@@ -82,6 +82,7 @@ func TransformToDashedDate(date string) (string, error) {
 	}
 
 	if shortMonthRegex.MatchString(date) {
+		date = strings.ReplaceAll(date, ".", "")
 		return parseShortMonthDate(date)
 	}
 
