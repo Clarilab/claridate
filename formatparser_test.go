@@ -77,7 +77,9 @@ func Test_TransformToDashedDate(t *testing.T) {
 		"ca. MM.YYYY":                             {"ca. 07.1984", "1984-07", nil},
 		"ca. YYYY":                                {"ca. 1984", "1984", nil},
 		"DD Mon YYYY with ;":                      {"30 Jul 1957; 1958", "1957-07-30", nil},
+		"DD Mon. YYYY":                            {"30 Jul. 1957", "1957-07-30", nil},
 		"Mon YYYY":                                {"Jul 1867", "1867-07", nil},
+		"Mon. YYYY":                               {"Jul. 1867", "1867-07", nil},
 		"DD.MM.YYYY with ;":                       {"30.07.1957; 1958", "1957-07-30", nil},
 		"ca. gibberish":                           {"ca. foobar", "", ErrUnsupportedDateFormat},
 	}
