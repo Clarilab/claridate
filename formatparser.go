@@ -42,11 +42,11 @@ func DetermineDateFormat(date string) (string, error) {
 	result := "YYYY"
 
 	if len(split) > 1 {
-		result = result + "-" + strings.Repeat("M", len(split[1]))
+		result = result + "-" + strings.Repeat("M", 2)
 	}
 
 	if len(split) > 2 {
-		result = result + "-" + strings.Repeat("D", len(split[2]))
+		result = result + "-" + strings.Repeat("D", 2)
 	}
 
 	return result, nil
