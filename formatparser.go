@@ -2,13 +2,14 @@ package claridate
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
 var dashedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(-\d{1,2}){0,2}$`)
 var dashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}-){0,2}\d{4}$`)
-var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}\d{4}$`)
+var dottedDateRegex = regexp.MustCompile(`^(\d{1,2}\.){0,2}(\d{2}|\d{4})$`)
 var slashedDateYearLastRegex = regexp.MustCompile(`^(\d{1,2}/){0,2}\d{4}$`)
 var slashedDateYearFirstRegex = regexp.MustCompile(`^\d{4}(/\d{1,2}){0,2}$`)
 var shortMonthRegex = regexp.MustCompile(`\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b`)
@@ -39,17 +40,18 @@ func DetermineDateFormat(date string) (string, error) {
 
 	split := strings.Split(date, "-")
 
-	result := "YYYY"
+	builder := strings.Builder{}
+	builder.WriteString("YYYY")
 
 	if len(split) > 1 {
-		result = result + "-" + strings.Repeat("M", 2)
+		builder.WriteString("-MM")
 	}
 
 	if len(split) > 2 {
-		result = result + "-" + strings.Repeat("D", 2)
+		builder.WriteString("-DD")
 	}
 
-	return result, nil
+	return builder.String(), nil
 }
 
 // TransformToDashedDate takes a date string that is in the dotted date format,
@@ -73,12 +75,12 @@ func TransformToDashedDate(date string) (string, error) {
 	}
 
 	if dashedDateYearFirstRegex.MatchString(date) {
-		return date, nil
+		return sanitizeDashedDate(date), nil
 	}
 
 	if dashedDateYearLastRegex.MatchString(date) {
 		// DD-MM-YYYY: in this case, split the date, reverse the slice and put it back together.
-		return strings.Join(reverse(strings.Split(date, "-")), "-"), nil
+		return strings.Join(reverse(strings.Split(sanitizeDashedDate(date), "-")), "-"), nil
 	}
 
 	if shortMonthRegex.MatchString(date) {
@@ -101,27 +103,64 @@ func TransformToDashedDate(date string) (string, error) {
 
 	split := strings.Split(date, separator)
 
+	var year, month, day string
+
 	switch len(split) {
-	// case 1 (YYYY) can never happen, because that also matches the dashedDateRegex and is returned "as is" in the first if-block of the function
-	case 2:
-		// MM.YYYY or MM/YYYY or YYYY/MM
-		if isSlashedYearFirst {
-			// YYYY/MM
-			return split[0] + "-" + split[1], nil
+	case 1: // YYYY
+		year = split[0]
+	case 2: // MM.YYYY or MM/YYYY or YYYY/MM
+		if isSlashedYearFirst { // YYYY/MM
+			year = split[0]
+			month = split[1]
+		} else {
+			// MM.YYYY or MM/YYYY
+			year = split[1]
+			month = split[0]
+
 		}
-		// MM.YYY or MM/YYY
-		return split[1] + "-" + split[0], nil
-	case 3:
-		// DD.MM.YYYY or DD/MM/YYYY or YYYY/MM/DD
-		if isSlashedYearFirst {
-			// YYYY/MM/DD
-			return split[0] + "-" + split[1] + "-" + split[2], nil
+	case 3: // DD.MM.YYYY or DD/MM/YYYY or YYYY/MM/DD
+		if isSlashedYearFirst { // YYYY/MM/DD
+			year = split[0]
+			month = split[1]
+			day = split[2]
+		} else {
+			// DD.MM.YYYY or DD/MM/YYYY
+			year = split[2]
+			month = split[1]
+			day = split[0]
 		}
-		// DD.MM.YYYY or DD/MM/YYYY
-		return split[2] + "-" + split[1] + "-" + split[0], nil
 	default:
 		return "", ErrUnsupportedDateFormat
 	}
+
+	return buildDashedDateResponse(year, month, day), nil
+}
+
+func sanitizeDashedDate(date string) string {
+	split := strings.Split(date, "-")
+	for i := range split {
+		// only happens in cases where day or month are single digits
+		if len(split[i]) == 1 {
+			split[i] = "0" + split[i]
+		}
+	}
+
+	return strings.Join(split, "-")
+}
+
+func transformTwoDigitYearToFourDigitYear(year string) string {
+	// we can safely ignore this error, as we already matched with the regex that this value is an integer
+	yearInt, _ := strconv.Atoi(year)
+
+	// this is exactly how go converts 2 digit years to 4 digit years
+	// https://cs.opensource.google/go/go/+/master:src/time/format.go;l=1082;drc=3ad6393f8676b1b408673bf40b8a876f29561eef
+	if yearInt >= 69 {
+		yearInt += 1900
+	} else {
+		yearInt += 2000
+	}
+
+	return strconv.Itoa(yearInt)
 }
 
 func parseShortMonthDate(date string) (string, error) {
@@ -140,7 +179,7 @@ func parseShortMonthDate(date string) (string, error) {
 			if err != nil {
 				return "", ErrUnsupportedDateFormat
 			}
-			return parsedDate.Format("2006-01-2"), nil
+			return parsedDate.Format("2006-01-02"), nil
 		}
 
 		parsedDate, err := time.Parse("02 Jan 2006", date)
@@ -159,4 +198,40 @@ func reverse(strSlice []string) []string {
 	}
 
 	return strSlice
+}
+
+func buildDashedDateResponse(year, month, day string) string {
+	builder := strings.Builder{}
+	if year != "" {
+		if len(year) == 2 {
+			year = transformTwoDigitYearToFourDigitYear(year)
+		}
+
+		builder.WriteString(year)
+
+		if month != "" {
+			builder.WriteString("-")
+		}
+	}
+
+	if month != "" {
+		if len(month) == 1 {
+			month = "0" + month
+		}
+
+		builder.WriteString(month)
+		if day != "" {
+			builder.WriteString("-")
+		}
+	}
+
+	if day != "" {
+		if len(day) == 1 {
+			day = "0" + day
+		}
+
+		builder.WriteString(day)
+	}
+
+	return builder.String()
 }
